@@ -73,7 +73,7 @@ const loginUser = async (req, res) => {
   }
 };
 
-// @desc   LOGOUT
+// @desc    LOGOUT
 // @route   POST /api/users/logout
 // @access  Public
 const logoutUser = async (req, res) => {
@@ -102,4 +102,33 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-export { createUser, loginUser, logoutUser, getUserProfile };
+// @desc    Update the current user
+// @route   PUT /api/users/profile
+// @access  Private/ Protected
+const updateUserProfile = async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    user.username = req.body.username || user.username;
+    user.email = req.body.email || user.email;
+
+    // Check if the request body includes a new password
+    if (req.body.password) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(req.body.password, salt);
+      user.password = hashedPassword;
+    }
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      username: updatedUser.username,
+      email: updatedUser.email,
+    });
+  } else {
+    res.status(404);
+    throw new Error("User not found");
+  }
+};
+
+export { createUser, loginUser, logoutUser, getUserProfile, updateUserProfile };
