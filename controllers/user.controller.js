@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import User from "../models/user.model.js";
+import generateToken from "../utils/generateToken.js";
 
 const createUser = async (req, res) => {
   const { username, email, password } = req.body;
@@ -23,6 +24,8 @@ const createUser = async (req, res) => {
   await newUser.save();
 
   if (newUser) {
+    //To generate jwt token
+    generateToken(res, newUser._id);
     res.status(201);
     res.json({
       message: "user successfully registred",
@@ -49,6 +52,8 @@ const loginUser = async (req, res) => {
       existingUser.password
     );
     if (isPasswordValid) {
+      //To generate jwt token
+      generateToken(res, newUser._id);
       res.status(200).json({
         _id: existingUser._id,
         username: existingUser.username,
