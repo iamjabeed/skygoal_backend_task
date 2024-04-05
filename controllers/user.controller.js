@@ -2,6 +2,9 @@ import bcrypt from "bcryptjs";
 import User from "../models/user.model.js";
 import generateToken from "../utils/generateToken.js";
 
+// @desc    Register a new user
+// @route   POST /api/users
+// @access  Public
 const createUser = async (req, res) => {
   const { username, email, password } = req.body;
   //   console.log(username, email, password);
@@ -41,6 +44,9 @@ const createUser = async (req, res) => {
   }
 };
 
+// @desc    LOGIN
+// @route   POST /api/users/login
+// @access  Public
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -53,7 +59,7 @@ const loginUser = async (req, res) => {
     );
     if (isPasswordValid) {
       //To generate jwt token
-      generateToken(res, newUser._id);
+      generateToken(res, existingUser._id);
       res.status(200).json({
         _id: existingUser._id,
         username: existingUser.username,
@@ -67,4 +73,33 @@ const loginUser = async (req, res) => {
   }
 };
 
-export { createUser, loginUser };
+// @desc   LOGOUT
+// @route   POST /api/users/logout
+// @access  Public
+const logoutUser = async (req, res) => {
+  res.cookie("jwt", "", {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+
+  res.status(200).json({ message: "Logged out successfully" });
+};
+
+// @desc    Get the current user
+// @route   GET /api/users/profile
+// @access  Private/ Protected
+const getUserProfile = async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (user) {
+    res.status(200).json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+    });
+  } else {
+    res.status(404);
+    throw new Error("user not found");
+  }
+};
+
+export { createUser, loginUser, logoutUser, getUserProfile };

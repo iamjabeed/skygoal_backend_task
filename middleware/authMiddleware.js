@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import User from "../models/user.model.js";
 
 const authenticate = async (req, res, next) => {
   let token;
@@ -14,10 +15,12 @@ const authenticate = async (req, res, next) => {
     } catch (error) {
       console.error(error);
       res.status(401);
+      res.json({ message: "Not authorized, token failed" });
       throw new Error("Not authorized, token failed");
     }
   } else {
     res.status(401);
+    res.json({ message: "Not authorized, no token" });
     throw new Error("Not authorized, no token");
   }
 };
